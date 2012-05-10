@@ -70,6 +70,8 @@ class IUUIDMapper(IUse64BitBTrees, IItemIdGenerator):
         Given spec argument of UUID (string or uuid.UUID), an integer
         record id, or a tuple of both (in any order), look up the
         identifier pair, and remove all bindings between identifiers. 
+        
+        Raises KeyError if identifier (spec) is not found.
         """
     
     def equivalent(spec, default=None):

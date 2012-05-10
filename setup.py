@@ -37,7 +37,12 @@ setup(name='uu.retrieval',
           # -*- Extra requirements: -*-
       ],
       extras_require = {
-          'test': [ 'plone.testing>=4.0.3', ],
+          'test': [ 
+            ## test running requires basic zope2 stack for integration
+            ## tests
+            'plone.testing [zodb, zca, security, publisher, z2]',
+            'Products.CMFCore>=2.2.3',
+            ],
       },
       entry_points='''
       # -*- Entry points: -*-
