@@ -2,6 +2,8 @@ from zope.interface import Interface
 from zope.interface.common.mapping import IItemMapping
 from zope.interface.common.mapping import IIterableMapping
 from zope.location.interfaces import ILocation
+from zope import schema
+
 
 CONTAINMENT_INDEX = 'contains'  # Keyword Index name used by resolver
 
@@ -13,17 +15,14 @@ class ISearchableSchema(Interface):
     """
 
 
-class IItemResovler(IItemMapping):
+class IItemResolver(IItemMapping):
     """
-    A read-only mapping interface for resolving an object,
-    may be used by adapter or utility components defined by
-    applications defining plug-ins for the components
-    in this library to find an object by UUID.
+    A callable object that takes a UID, returns an object value
+    for an item.
+    """
     
-    Assumed: all keys are UUIDs; normalized form is string
-    representation, but query from __getitem__() and get()
-    using uuid.UUID objects is also permissable.
-    """
+    def __call__(uid):
+        """Return object for given UID, or None"""
 
 
 class IItemCollection(IIterableMapping, ILocation):
@@ -155,3 +154,54 @@ class INamedItemContainer(INamedItemCollection):
         """
 
 
+class ISearchResult(IUIDItemCollection):
+    """
+    Search result mapping interface; like an IUIDItemCollection, keyed
+    by UID of items, with a few notable differences:
+    
+    (1) keys are also mapped internally to integer record ids;
+    
+    (2) this one-to-one relationship between record id and UID can be
+        queried, in either direction.
+    
+    (3) get() and __getitem__() are lazy, evaluated as needed, and as
+        a result, it is recommended that calling code use iteritems()
+        and itervalues() instead of items() and values() to obtain
+        items().  Alternately, batching can be done on keys
+        inexpensively, and get values as needed in calling code;
+        however, batching is not implemented by the result itself.
+    """
+    
+    resolver = schema.Object(
+        title=u'Item resolver callable',
+        description=u'Function or callable component that resolves item '\
+                    u'by its [U]UID.  Optionally may cache or memoize, '\
+                    u'if appropriate (depends on implementation).',
+        schema=IItemResolver,
+        )
+    
+    def record_ids():
+        """
+        Return frozenset of record ids (RIDs) known to result, each
+        corresponds to a UID key in this result.  May be used for 
+        set caching (frozenset of integers is stable, deterministic,
+        cacheable) or the caching of set intersections.
+        """
+
+    def rid_for(uid):
+        """
+        Return the integer RID for the UUID given.  UUID will be
+        normalized to string representation, or None.
+        """
+
+    def uid_for(rid):
+        """
+        Return (string representation) UUID for RID given, or None.
+        """
+    
+    def get(name, default=None):
+        """Lazy get of item, if unresolvable, return default."""
+    
+    def __getitem__(name):
+        """Lazy get of item, if unresolvable, raise KeyError."""
+    
