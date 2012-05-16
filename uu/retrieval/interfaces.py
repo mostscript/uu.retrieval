@@ -185,7 +185,8 @@ class ISearchResult(IUIDItemCollection):
         Return frozenset of record ids (RIDs) known to result, each
         corresponds to a UID key in this result.  May be used for 
         set caching (frozenset of integers is stable, deterministic,
-        cacheable) or the caching of set intersections.
+        hashable, cacheable) or the caching of set intersections.  The
+        hash of a frozenset makes a good cache key for various uses.
         """
 
     def rid_for(uid):
