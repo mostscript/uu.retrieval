@@ -110,7 +110,7 @@ class UUIDMapper(Persistent, IdGeneratorBase):
     
     def _is_uid(spec):
         normalized = str(spec)
-        return True if len(normalized)==36 and '-' in normalized
+        return (len(normalized)==36 and '-' in normalized)
     
     def _pair(spec):
         """
