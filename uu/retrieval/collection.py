@@ -27,7 +27,7 @@ class BaseCollection(object):
     obtained from the name->uid, and uid->item mappings.
     """
     
-    implements(IUIDItemCollection)
+    implements(IUIDItemCollection, ICollectionSetOperations)
     
     def __init__(self, items, namemap=None):
         if hasattr(items, 'items'):
@@ -187,7 +187,7 @@ class BaseNamedCollection(BaseCollection):
     is required on construction.
     """
     
-    implementsOnly(INamedItemCollection)
+    implementsOnly(INamedItemCollection, ICollectionSetOperations)
     
     def __init__(self, items, namemap):
         if namemap is None or len(namemap) != len(items):

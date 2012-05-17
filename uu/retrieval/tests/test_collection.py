@@ -2,7 +2,7 @@ import unittest2 as unittest
 import uuid
 
 from uu.retrieval.interfaces import IUIDItemCollection, INamedItemCollection
-from uu.retrieval.interfaces import IItemCollection
+from uu.retrieval.interfaces import IItemCollection, ICollectionSetOperations
 from uu.retrieval.collection import BaseCollection, BaseNamedCollection
 
 NS_UPIQ = uuid.uuid3(uuid.NAMESPACE_DNS, 'upiq.org')
@@ -46,6 +46,7 @@ class TestCollection(unittest.TestCase):
     def test_interfaces(self):
         collection = BaseCollection(ITEMS, NAMES)
         assert IItemCollection.providedBy(collection)
+        assert ICollectionSetOperations.providedBy(collection)
         assert IUIDItemCollection.providedBy(collection)
         assert not INamedItemCollection.providedBy(collection)
    
@@ -182,6 +183,7 @@ class TestNamedCollection(unittest.TestCase):
     def test_interfaces(self):
         collection = BaseNamedCollection(ITEMS, NAMES)
         assert IItemCollection.providedBy(collection)
+        assert ICollectionSetOperations.providedBy(collection)
         assert INamedItemCollection.providedBy(collection)
         assert not IUIDItemCollection.providedBy(collection)
     
