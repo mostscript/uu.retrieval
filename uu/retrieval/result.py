@@ -47,15 +47,17 @@ class SearchResult(BaseCollection):
         self._cached_uids = []
     
     @classmethod
-    def fromtuples(cls, idtuple, resolver):
+    def fromtuples(cls, idtuples, resolver):
         """Construct from a sequence of (rid, uid) tuples"""
         if resolver is None or not hasattr(resolver, '__call__'):
             raise ValueError('missing or non-callable item resolver')
         o = object.__new__(cls)
-        o._rids, o._cached_uids = zip(*idtuple)
+        o._rids, o._cached_uids = [], []
+        if idtuples:
+            o._rids, o._cached_uids = zip(*idtuples)
         o._idmapper = None
-        o._rid_to_uid = dict(idtuple)
-        o._uid_to_rid = dict((v,k) for k,v in idtuple)
+        o._rid_to_uid = dict(idtuples)
+        o._uid_to_rid = dict((v,k) for k,v in idtuples)
         o.resolver = resolver
         return o
     
