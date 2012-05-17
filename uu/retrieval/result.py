@@ -1,3 +1,5 @@
+import itertools
+
 from zope.interface import implements
 
 from uu.retrieval.interfaces import ISearchResult, IRecordIdMapper
@@ -41,7 +43,7 @@ class SearchResult(BaseCollection):
         self._rids = list(rids)
         self._idmapper = idmapper
         self._rid_to_uid = self._uid_to_rid = None
-        self._resolver = resolver
+        self.resolver = resolver
         self._cached_uids = []
     
     @classmethod
@@ -54,7 +56,7 @@ class SearchResult(BaseCollection):
         o._idmapper = None
         o._rid_to_uid = dict(idtuple)
         o._uid_to_rid = dict((v,k) for k,v in idtuple)
-        o._resolver = resolver
+        o.resolver = resolver
         return o
     
     @property
@@ -71,22 +73,23 @@ class SearchResult(BaseCollection):
         return self._uids
     
     def __contains__(self, name):
-        if isinstance(name, string):
+        if isinstance(name, str):
             rid = self.rid_for(name)
         else:
             rid = int(name)
         return rid in self._rids
     
     def get(self, name, default=None):
+        name = str(name)
         if name not in self:
             return default  # do not resolve a non-member item
-        v = self._resolver(name)   # resolve item by UID
+        v = self.resolver(name)   # resolve item by UID
         if v is None:
             return default
         return v
     
     def __getitem__(self, name):
-        super(SearchResult, self).__getitem__(name)  # relies on self.get()
+        return super(SearchResult, self).__getitem__(name)  # relies on self.get()
 
     def uid_for(self, rid):
         if self._idmapper is not None:
@@ -117,7 +120,7 @@ class SearchResult(BaseCollection):
         for rid in self.record_ids(ordered=True):
             if rid in result_rids:
                 result.append((rid, self.uid_for(rid),))  # keep order
-        return self.__class__.fromtuples(result, self._resolver)
+        return self.__class__.fromtuples(result, self.resolver)
     
     __sub__ = difference
 
@@ -131,7 +134,7 @@ class SearchResult(BaseCollection):
         for rid in other.record_ids(ordered=True):
             if rid not in self._rids:
                 result.append((rid, self.uid_for(rid),))  # only non-dupes
-        return self.__class__.fromtuples(result, self._resolver)
+        return self.__class__.fromtuples(result, self.resolver)
     
     __add__ = __or__ = union
     
@@ -145,7 +148,7 @@ class SearchResult(BaseCollection):
         for rid in smallest.record_ids(ordered=True):
             if rid in result_rids:
                 result.append((rid, self.uid_for(rid),))  # only non-dupes
-        return self.__class__.fromtuples(result, self._resolver)
+        return self.__class__.fromtuples(result, self.resolver)
     
     __and__ = intersection
 
