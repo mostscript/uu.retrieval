@@ -9,6 +9,9 @@ iterable = lambda v: hasattr(v, '__iter__')
 is_multiple = lambda v: not_string(v) and iterable(v)
 
 
+mergedict = lambda s: dict(reduce(lambda a,b: a.items() + b.items(), s))
+
+
 signature = lambda iface: md5(serializeSchema(iface).strip()).hexdigest()
 
 
