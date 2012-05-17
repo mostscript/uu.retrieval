@@ -249,3 +249,36 @@ class TestSearchResult(unittest.TestCase):
     
     # test ISearchResult specific methods:
     
+    def test_idmapping(self):
+        result = SearchResult(
+            rids=[rid for rid,uid in _DOCMAP.items() if uid in ITEMS],
+            idmapper=DMAP,
+            resolver=RESOLVE_ALL,
+            )
+        for uidkey in result.keys():
+            assert result.uid_for(result.rid_for(uidkey)) == uidkey
+    
+    def test_record_ids(self):
+        result = SearchResult(
+            rids=[rid for rid,uid in _DOCMAP.items() if uid in ITEMS],
+            idmapper=DMAP,
+            resolver=RESOLVE_ALL,
+            )
+        rids = result.record_ids()
+        assert isinstance(rids, frozenset)
+        seq_rids = result.record_ids(ordered=True)
+        assert isinstance(seq_rids, list)
+        assert len(rids) == len(seq_rids) == len(result.keys())
+        assert frozenset([result.rid_for(k) for k in result.keys()]) == rids
+    
+    def test_fromtuples_ctor(self):
+        result = SearchResult.fromtuples(
+            idtuples=[(rid,uid) for rid,uid in _DOCMAP.items() if uid in ITEMS],
+            resolver=RESOLVE_ALL,
+            )
+        self.assertIsInstance(result, SearchResult)
+        assert set(result.keys()) == set(ITEMS.keys())
+        assert len(result.record_ids()) == len(result.keys())
+        assert result.resolver is RESOLVE_ALL
+        assert result._idmapper is None  # ununsed when constructed this way
+
