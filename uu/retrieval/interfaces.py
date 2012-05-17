@@ -180,13 +180,16 @@ class ISearchResult(IUIDItemCollection):
         schema=IItemResolver,
         )
     
-    def record_ids():
+    def record_ids(ordered=False):
         """
         Return frozenset of record ids (RIDs) known to result, each
         corresponds to a UID key in this result.  May be used for 
         set caching (frozenset of integers is stable, deterministic,
         hashable, cacheable) or the caching of set intersections.  The
         hash of a frozenset makes a good cache key for various uses.
+        
+        If ordered is True, then return a sequence instead of a
+        frozenset.
         """
 
     def rid_for(uid):
@@ -205,4 +208,15 @@ class ISearchResult(IUIDItemCollection):
     
     def __getitem__(name):
         """Lazy get of item, if unresolvable, raise KeyError."""
+
+
+class IRecordIdMapper(Interface):
+    """Map (64-bit integer) RID <--> (string) UID (one-to-one)"""
     
+    def uid_for(rid):
+        """Get (string) representation of UUID for an integer record id."""
+    
+    def rid_for(uid):
+        """Given string UUID, get integer record id."""
+
+
