@@ -1,6 +1,7 @@
 import unittest2 as unittest
 import uuid
 
+from persistent import Persistent
 from zope.interface import implements
 
 from uu.retrieval.interfaces import IItemResolver
@@ -42,10 +43,16 @@ class MockResolver(object):
         return self._items.get(uid)
 
 
-class MockItem(object):
+class MockItem(Persistent):
     """Mock item class"""
     def __init__(self, id=None):
         self.id = id
+        self._v_parent = None
+    
+    @property
+    def __parent__(self):
+        return getattr(self, '_v_parent', None)
+    
     def getId(self):
         return self.id
 
