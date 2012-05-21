@@ -1,6 +1,6 @@
 import unittest2 as unittest
 
-from zope.component.hooks import getSite
+from zope.component.hooks import getSite, setSite
 from Acquisition import aq_base
 from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
 from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
@@ -15,9 +15,10 @@ class TestLayer(unittest.TestCase):
     
     def setUp(self):
         self.site = self.layer['site']
+        setSite(self.site)
         self.catalog = self.site['portal_catalog']
     
-    def test_layer_site(self):
+    def test_suite_setup_site(self):
         self.assertTrue(aq_base(self.site) is aq_base(getSite()))
     
     def test_layer_catalog(self):

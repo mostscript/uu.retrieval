@@ -1,9 +1,11 @@
 # test layers for uu.retrieval -- requires plone.testing
 
 import transaction
-from plone.testing import zodb
+from plone.testing import zodb, zca
 from plone.testing import Layer, z2
-from zope.component.hooks import setSite
+import plone.uuid
+from zope.configuration import xmlconfig
+from zope.component.hooks import setSite, setHooks
 #from zope.configuration import xmlconfig
 from Products.CMFCore.utils import getToolByName
 
@@ -43,8 +45,6 @@ class CMFSiteLayer(Layer):
         site = app[id]
         # add site as a layer resource, though getSite() also useable by tests:
         self['site'] = site
-        # set that folder as the local site using zope.component.hooks.setSite
-        setSite(site)
 
     def setUp(self):
         self['zodbDB'] = db = zodb.stackDemoStorage(
@@ -57,13 +57,17 @@ class CMFSiteLayer(Layer):
                 z2.installProduct(app, pkg)
             self.setUpSite(app)
             transaction.commit()
+        global_components = zca.pushGlobalRegistry()
+        site = self.get('site')
+        local_components = site.getSiteManager()
+        if global_components not in local_components.__bases__:
+            local_components.__bases__ = (global_components,)
 
     def tearDown(self):
-        # unset the local site previously set using setSite()
-        setSite(None) 
         # remove the stacked storage layer
         self['zodbDB'].close()
         del(self['zodbDB'])
+        zca.popGlobalRegistry()
 
 
 
@@ -89,15 +93,18 @@ class RetrievalCMFAppLayer(Layer):
     
     defaultBases = (CMF_SITE_TESTING,)
     
+    def _load_layer_zcml(self):
+        xmlconfig.file('configure.zcml', plone.uuid)
+    
     def setUp(self):
-        site = self.get('site')
         # Add indexes necessary to Catalog: UID
+        site = self.get('site')
         catalog = getToolByName(site, 'portal_catalog')
         catalog.addIndex('UID', type='FieldIndex')        # singular item UID
         catalog.addIndex('contains', type='KeywordIndex') # contained UIDs
         transaction.commit()
-
-
+        self._load_layer_zcml()
+        
 
 RETRIEVAL_APP_LAYER = RetrievalCMFAppLayer()
 
