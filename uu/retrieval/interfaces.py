@@ -1,3 +1,4 @@
+from zope.container.interfaces import IOrderedContainer
 from zope.interface import Interface
 from zope.interface.common.mapping import IItemMapping
 from zope.interface.common.mapping import IIterableMapping
@@ -102,6 +103,16 @@ class INamedItemCollection(IItemCollection):
     name.
     """
 
+
+class IUIDKeyedContainer(IOrderedContainer):
+    """
+    Marker interface for a container keyed by UUID (string
+    representation).
+    
+    It is assumed that get(), __getitem__(), values(), items(), and 
+    iterator equivalents all return records/items with a dynamically
+    (just-in-time) __parent__ pointer pointing to container at runtime.
+    """
 
 
 class INamedItemContainer(INamedItemCollection):
