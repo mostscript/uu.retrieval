@@ -27,3 +27,16 @@ def identify_interface(iface):
         return iface.__identifier__   # will have fully qualified dottedname
     return identify_dynamic_interface(iface)  # fallback to identify dynamic
 
+def normalize_uuid(v):
+    if isinstance(v, int) or isinstance(v, long):
+        return str(uuid.UUID(int=v))    # long to canonical
+    v = str(v)
+    if len(v) == 36:
+        return v                        # canonical
+    if len(v) == 32 and '-' not in v:
+        return str(uuid.UUID(v))        # hex -> canonical form
+    if len(v) == 16:
+        return str(uuid.UUID(bytes=v))  # bytes -> canonical
+    if v in (None, 'None'):
+        return None
+    return v                            # fallback / unknown

@@ -2,13 +2,14 @@ import unittest2 as unittest
 import uuid
 
 from persistent import Persistent
+from plone.uuid.interfaces import IAttributeUUID
 from zope.interface import implements
 
 from uu.retrieval.interfaces import IItemResolver
 from uu.retrieval.interfaces import IUIDItemCollection, ISearchResult
 from uu.retrieval.interfaces import IItemCollection, ICollectionSetOperations
 from uu.retrieval.result import DocumentIdMapper, SearchResult
-from uu.retrieval.utils import mergedict
+from uu.retrieval.utils import mergedict, normalize_uuid
 
 NS_UPIQ = uuid.uuid3(uuid.NAMESPACE_DNS, 'upiq.org')
 NS_PKG = uuid.uuid3(NS_UPIQ, 'uu.retrieval.tests.test_result')
@@ -45,6 +46,9 @@ class MockResolver(object):
 
 class MockItem(Persistent):
     """Mock item class"""
+    
+    implements(IAttributeUUID)
+    
     def __init__(self, id=None):
         self.id = id
         self._v_parent = None
@@ -91,6 +95,11 @@ class TestSearchResult(unittest.TestCase):
     Tests for BaseItemCollection (uid-keyed).
     """
     
+    def setUp(self):
+        from zope.configuration import xmlconfig
+        import plone.uuid
+        c = xmlconfig.file('configure.zcml', plone.uuid)
+     
     def test_interfaces(self):
         result = SearchResult(
             rids=[rid for rid,uid in _DOCMAP.items() if uid in ITEMS],
@@ -101,7 +110,16 @@ class TestSearchResult(unittest.TestCase):
         assert ICollectionSetOperations.providedBy(result)
         assert IUIDItemCollection.providedBy(result)
         assert ISearchResult.providedBy(result)
-
+    
+    def test_mock_items_uuid(self):
+        from plone.uuid.interfaces import IUUID
+        from zope.event import notify
+        from zope.lifecycleevent import ObjectCreatedEvent
+        for obj in ALL_ITEMS.values():
+            self.assertEqual(IUUID(obj, None), None)
+            notify(ObjectCreatedEvent(obj))
+            self.assertNotEqual(IUUID(obj, None), None)
+    
     def test_get(self):
         """Test get/__getitem__ methods"""
         k = ITEMS.keys()[0]
