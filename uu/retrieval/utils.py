@@ -1,3 +1,4 @@
+import uuid
 from hashlib import md5
 
 from plone.supermodel import serializeSchema
