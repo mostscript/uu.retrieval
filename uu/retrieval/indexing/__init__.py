@@ -1,4 +1,5 @@
 import random
+import uuid
 
 from plone.uuid.interfaces import IUUID
 from persistent import Persistent
@@ -108,11 +109,11 @@ class UUIDMapper(Persistent, IdGeneratorBase):
     def __len__(self):
         return self._length()
     
-    def _is_uid(spec):
+    def _is_uid(self, spec):
         normalized = str(spec)
         return (len(normalized)==36 and '-' in normalized)
     
-    def _pair(spec):
+    def _pair(self, spec):
         """
         Return (uid, docid) pair tuple for spec, or None if not found.
         """
