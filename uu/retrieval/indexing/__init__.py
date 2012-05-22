@@ -163,7 +163,7 @@ class UUIDMapper(Persistent, IdGeneratorBase):
             raise KeyError('key specification %s not found' % spec)
         return docid if self._is_uid(spec) else uid
     
-    get = eqivalent
+    get = equivalent
     
     def __getitem__(self, spec):
         v = self.get(spec, None)
@@ -187,7 +187,7 @@ class UUIDMapper(Persistent, IdGeneratorBase):
         return (self.uuid_to_docid.get(k) for k in self.iterkeys())
     
     def iteritems(self):
-        return ((k, self.uuid_to_docid.get(k)) for k in self.iterkeys()
+        return ((k, self.uuid_to_docid.get(k)) for k in self.iterkeys())
     
     # method aliases:
     __iter__ = iterkeys
