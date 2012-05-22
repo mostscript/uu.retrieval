@@ -142,6 +142,7 @@ class UUIDMapper(Persistent, IdGeneratorBase):
         self.uuid_to_docid[uid] = docid
         self.docid_to_uuid[docid] = uid
         self._length.change(1)  # increment length counter
+        return uid, docid
     
     def remove(self, spec):
         try:
