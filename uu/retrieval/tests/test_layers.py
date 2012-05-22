@@ -2,7 +2,7 @@ import unittest2 as unittest
 
 from zope.component.hooks import getSite, setSite
 from Acquisition import aq_base
-from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
+from Products.PluginIndexes.UUIDIndex.UUIDIndex import UUIDIndex
 from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 
 from uu.retrieval.tests.layers import RETRIEVAL_APP_TESTING
@@ -25,6 +25,6 @@ class TestLayer(unittest.TestCase):
         _idx = lambda name: self.catalog._catalog.getIndex(name)
         self.assertTrue('UID' in self.catalog.indexes())
         self.assertTrue('contains' in self.catalog.indexes())
-        self.assertIsInstance(aq_base(_idx('UID')), FieldIndex)
+        self.assertIsInstance(aq_base(_idx('UID')), UUIDIndex)
         self.assertIsInstance(aq_base(_idx('contains')), KeywordIndex)
 

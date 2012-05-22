@@ -100,7 +100,7 @@ class RetrievalCMFAppLayer(Layer):
         # Add indexes necessary to Catalog: UID
         site = self.get('site')
         catalog = getToolByName(site, 'portal_catalog')
-        catalog.addIndex('UID', type='FieldIndex')        # singular item UID
+        catalog.addIndex('UID', type='UUIDIndex')         # singular item UID
         catalog.addIndex('contains', type='KeywordIndex') # contained UIDs
         transaction.commit()
         self._load_layer_zcml()
