@@ -28,6 +28,7 @@ def identify_interface(iface):
         return iface.__identifier__   # will have fully qualified dottedname
     return identify_dynamic_interface(iface)  # fallback to identify dynamic
 
+
 def normalize_uuid(v):
     if isinstance(v, int) or isinstance(v, long):
         return str(uuid.UUID(int=v))    # long to canonical
