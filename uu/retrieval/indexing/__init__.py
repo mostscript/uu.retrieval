@@ -8,9 +8,14 @@ from repoze.catalog.indexes.field import CatalogFieldIndex
 from repoze.catalog.indexes.text import CatalogTextIndex
 from repoze.catalog.indexes.keyword import CatalogKeywordIndex
 from zope.interface import implements
+from zope.index.text.lexicon import CaseNormalizer
+from zope.index.text.lexicon import Lexicon
+from zope.index.text.lexicon import Splitter
+from zope.index.text.lexicon import StopWordRemover
+from zope.index.text.okapiindex import OkapiIndex
 import BTrees
 
-from uu.retrieval.utils import is_multiple
+from uu.retrieval.utils import is_multiple, normalize_uuid
 
 from interfaces import IIndexer, ICatalogIndex, IUUIDMapper
 
@@ -34,6 +39,24 @@ class TextIndex(CatalogTextIndex):
     """Text index using long integer document ids"""
     
     family = BTrees.family64
+    
+    ## need a hacky constructor because zope.index has bug where
+    ## it ignores TextIndex family when constructing an OkapiIndex
+    def __init__(self, discriminator, lexicon=None, index=None):
+        _lexicon = lexicon
+        if lexicon is None:
+            _lexicon = Lexicon(
+                Splitter(),
+                CaseNormalizer(),
+                StopWordRemover(),
+                )
+        if index is None:
+            index = OkapiIndex(_lexicon, family=self.family)
+        super(TextIndex, self).__init__(discriminator, lexicon, index)
+        if lexicon is None:
+            self.lexicon = index.lexicon
+        self.index = index
+        self.clear()
 
 
 class KeywordIndex(CatalogKeywordIndex):
@@ -77,20 +100,20 @@ class IdGeneratorBase(object):
             self._v_nextid = None
     
     def new_uuid(self, obj=None, createfn=None):
-        """Returns string repreesntation"""
+        """Returns string represntation"""
         
         if obj and createfn is None:
             try:
-                uid = IUUID(obj)
+                uid = normalize_uuid(IUUID(obj))
             except TypeError:
                 uid = None
             if uid is not None:
-                return uid
+                return str(uid)
         if obj and createfn:
-            return creatfn(obj)
+            return str(createfn(obj))
         if createfn and obj is None:
-            return createfn()
-        return uuid.uuid4()  # random UUID
+            return str(createfn())
+        return str(uuid.uuid4())  # random UUID
 
 
 class UUIDMapper(Persistent, IdGeneratorBase):
@@ -110,7 +133,9 @@ class UUIDMapper(Persistent, IdGeneratorBase):
         return self._length()
     
     def _is_uid(self, spec):
-        normalized = str(spec)
+        if isinstance(spec, int) or isinstance(spec, long):
+            return False
+        normalized = normalize_uuid(spec)
         return (len(normalized)==36 and '-' in normalized)
     
     def _pair(self, spec):
@@ -118,8 +143,10 @@ class UUIDMapper(Persistent, IdGeneratorBase):
         Return (uid, docid) pair tuple for spec, or None if not found.
         """
         if isinstance(spec, int) or isinstance(spec, long):
-            return (self.docid_to_uuid.get(spec, None), spec)
-        return (str(spec), self.uuid_to_docid.get(str(spec), None))
+            uid = self.docid_to_uuid.get(spec, None)
+            return (uid, spec) if uid else None
+        docid = self.uuid_to_docid.get(str(spec), None)
+        return (str(spec), docid) if docid else None
     
     def __contains__(self, spec):
         return self._pair(spec) is not None
@@ -147,7 +174,7 @@ class UUIDMapper(Persistent, IdGeneratorBase):
     def remove(self, spec):
         try:
             uid, docid = self._pair(spec)
-        except ValueError:
+        except (ValueError, TypeError):
             raise KeyError('key specification %s not found' % spec)
         del(self.uuid_to_docid[uid])
         del(self.docid_to_uuid[docid])
@@ -161,8 +188,8 @@ class UUIDMapper(Persistent, IdGeneratorBase):
             return r
         try:
             uid, docid = self._pair(spec)
-        except ValueError:
-            raise KeyError('key specification %s not found' % spec)
+        except (ValueError, TypeError):
+            return default
         return docid if self._is_uid(spec) else uid
     
     get = equivalent
@@ -196,8 +223,10 @@ class UUIDMapper(Persistent, IdGeneratorBase):
     uuid_for = docid_for = uuids_for = docids_for = equivalent
 
 
+def assertint(docid):
+    if not (isinstance(docid, int) or isinstance(docid, long)):
+        raise ValueError('%s is not an integer or long' % docid)
 
-## TODO TODO: tests for: catalog+indexes w/64 bit keys
-## TODO TODO: tests for: id generation (integer and uuid flavors)
-## TODO TODO: tests for: UUID mapper
+from repoze.catalog import catalog
+catalog.assertint = assertint  # monkey patch repoze.catalog for now 64bits
 
