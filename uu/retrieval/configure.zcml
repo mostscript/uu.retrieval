@@ -1,0 +1,22 @@
+<configure xmlns="http://namespaces.zope.org/zope">
+
+  <!-- need ZCA bits for ZCML -->
+  <include
+    package="zope.component"
+    file="meta.zcml"
+    />
+  <include
+    package="zope.component"
+    />
+ 
+  <adapter
+    for="zope.interface.interfaces.IInterface"
+    factory=".schema.schema_indexes"
+    />
+
+  <adapter
+    for="zope.schema.interfaces.IField"
+    factory=".schema.schema_indexes"
+    />
+
+</configure>

@@ -9,6 +9,7 @@ from zope.component.hooks import setSite, setHooks
 #from zope.configuration import xmlconfig
 from Products.CMFCore.utils import getToolByName
 
+import uu.retrieval
 from uu.retrieval.tests.fixtures import CMFSite
 
 
@@ -94,6 +95,7 @@ class RetrievalCMFAppLayer(Layer):
     defaultBases = (CMF_SITE_TESTING,)
     
     def _load_layer_zcml(self):
+        xmlconfig.file('configure.zcml', uu.retrieval)
         xmlconfig.file('configure.zcml', plone.uuid)
     
     def setUp(self):

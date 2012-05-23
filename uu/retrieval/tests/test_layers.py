@@ -27,4 +27,11 @@ class TestLayer(unittest.TestCase):
         self.assertTrue('contains' in self.catalog.indexes())
         self.assertIsInstance(aq_base(_idx('UID')), UUIDIndex)
         self.assertIsInstance(aq_base(_idx('contains')), KeywordIndex)
+    
+    def test_registrations(self):
+        from uu.retrieval.interfaces import ISchemaIndexes
+        from uu.retrieval.tests.test_schema import ITestSchemaIndexes
+        assert ISchemaIndexes(ITestSchemaIndexes, None) is not None
+        field = ITestSchemaIndexes['name']
+        assert ISchemaIndexes(field, None) is not None
 

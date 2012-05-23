@@ -42,6 +42,7 @@ setup(name='uu.retrieval',
             ## tests
             'plone.testing [zodb, zca, security, publisher, z2]',
             'Products.CMFCore>=2.2.3',
+            'zope.configuration',
             ],
       },
       entry_points='''
