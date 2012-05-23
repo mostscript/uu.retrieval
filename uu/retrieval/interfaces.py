@@ -1,4 +1,4 @@
-from zope.container.interfaces import IOrderedContainer
+from zope.container.interfaces import IItemContainer
 from zope.interface import Interface
 from zope.interface.common.mapping import IItemMapping
 from zope.interface.common.mapping import IIterableMapping
@@ -104,7 +104,7 @@ class INamedItemCollection(IItemCollection):
     """
 
 
-class IUIDKeyedContainer(IOrderedContainer):
+class IUIDKeyedContainer(IItemContainer):
     """
     Marker interface for a container keyed by UUID (string
     representation).
@@ -112,6 +112,10 @@ class IUIDKeyedContainer(IOrderedContainer):
     It is assumed that get(), __getitem__(), values(), items(), and 
     iterator equivalents all return records/items with a dynamically
     (just-in-time) __parent__ pointer pointing to container at runtime.
+    
+    May or may not be ordered; implementations providing order should
+    declare that they provide zope.container.interfaces.IOrderedContainer
+    in addition to this interface.
     """
 
 
@@ -165,10 +169,12 @@ class INamedItemContainer(INamedItemCollection):
         """
 
 
-class ISearchResult(IUIDItemCollection):
+class ISearchContext(IUIDItemCollection):
     """
-    Search result mapping interface; like an IUIDItemCollection, keyed
-    by UID of items, with a few notable differences:
+    Search result or container of items on which to perform a search
+    or filtering operation.  This is an iterable mapping interface;
+    like an IUIDItemCollection, keyed by UID of items, with a few
+    notable differences:
     
     (1) keys are also mapped internally to integer record ids;
     
@@ -219,6 +225,12 @@ class ISearchResult(IUIDItemCollection):
     
     def __getitem__(name):
         """Lazy get of item, if unresolvable, raise KeyError."""
+
+
+class ISearchResult(ISearchContext):
+    """
+    Marker interface for a search context that is a result of a query.
+    """
 
 
 class IRecordIdMapper(Interface):
