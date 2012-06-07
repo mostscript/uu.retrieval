@@ -99,29 +99,35 @@ class SchemaManager(Persistent):
         self._names.remove(name)
 
 
-@implementer(ISchemaIndexes)
-@adapter(IInterface)   # and also IField
-def schema_indexes(context):
+def schema_index_types(field):
     idxmap = { 
         zope.schema.interfaces.ITextLine     : ('field', 'text'),
         zope.schema.interfaces.IBytesLine    : ('field', 'text'),
         zope.schema.interfaces.IText         : ('text',),
         zope.schema.interfaces.ISequence     : ('keyword',),
+        zope.schema.interfaces.IChoice       : ('field',),
         zope.schema.interfaces.IBytes        : (), #omit bytes fields!
         zope.schema.interfaces.IObject       : (), #omit
         zope.schema.interfaces.IDict         : (), #omit
         }
+    _index_types = set()
+    _use_default = True
+    for fieldtype, idxtypes in idxmap.items():
+        if fieldtype.providedBy(field):
+            _index_types = _index_types.union(idxtypes)
+            _use_default = False  # found a match
+    if _use_default:
+        _index_types.add('field')
+    return tuple(_index_types)
+
+
+@implementer(ISchemaIndexes)
+@adapter(IInterface)   # and also IField
+def schema_indexes(context):
     if IField.providedBy(context):
-        name = context.__name__  # field name
-        _index_types = set()
-        _use_default = True
-        for fieldtype, idxtypes in idxmap.items():
-            if fieldtype.providedBy(context):
-                _index_types = _index_types.union(idxtypes)
-                _use_default = False  # found a match
-        if _use_default:
-            _index_types.add('field')
+        _index_types = schema_index_types(context)
         _name = lambda idx,n: '%s_%s' % (idx, n)
+        name = context.__name__ 
         return tuple(_name(idx, name) for idx in _index_types)
     if IInterface.providedBy(context):
         r = []
@@ -129,4 +135,42 @@ def schema_indexes(context):
             r += list(schema_indexes(field))
         return tuple(r)
     raise ValueError('context must be interface or field')
+
+
+def index_comparators(idx):
+    if '_' in idx:
+        idx = idx.split('_')[0]
+    comparators = {
+        'field' : (
+            'Any',
+            'Eq',
+            'Ge',
+            'Gt',
+            'InRange',
+            'Le',
+            'Lt',
+            'NotEq',
+            'NotInRange',
+            ),
+        'keyword' : (
+            'Any',
+            'All',
+            'DoesNotContain',
+            ),
+        'text' : (
+            'Contains',
+            'DoesNotContain',
+            ),
+        }
+    if idx not in comparators:
+        return ()
+    return comparators[idx]
+
+
+def field_comparators(field):
+    indexes = schema_indexes(field)
+    result = set()
+    for idx in indexes:
+        result = result.union(index_comparators(idx))
+    return tuple(result)
 
