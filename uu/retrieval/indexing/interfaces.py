@@ -34,7 +34,9 @@ class IItemIdGenerator(Interface):
    
     def new_uuid(obj=None, createfn=None): 
         """
-        Generate RFC 4122 UUID, returns string representation.
+        Generate RFC 4122 UUID, returns string representation in
+        canontical fielded format (with dashes).
+        
         If createfn is not None, use that function to create
         a UUID for the object.  A combination of obj and createfn
         arguments may be used to create a UUID based on some 

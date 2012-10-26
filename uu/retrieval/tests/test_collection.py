@@ -1,8 +1,10 @@
 import unittest2 as unittest
 import uuid
 
-from uu.retrieval.interfaces import IUIDItemCollection, INamedItemCollection
-from uu.retrieval.interfaces import IItemCollection, ICollectionSetOperations
+from uu.retrieval.collection.interfaces import IUIDItemCollection
+from uu.retrieval.collection.interfaces import INamedItemCollection
+from uu.retrieval.collection.interfaces import IItemCollection
+from uu.retrieval.collection.interfaces import ICollectionSetOperations
 from uu.retrieval.collection import BaseCollection, BaseNamedCollection
 
 NS_UPIQ = uuid.uuid3(uuid.NAMESPACE_DNS, 'upiq.org')

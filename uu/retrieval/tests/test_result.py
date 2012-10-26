@@ -6,8 +6,10 @@ from plone.uuid.interfaces import IAttributeUUID
 from zope.interface import implements
 
 from uu.retrieval.interfaces import IItemResolver
-from uu.retrieval.interfaces import IUIDItemCollection, ISearchResult
-from uu.retrieval.interfaces import IItemCollection, ICollectionSetOperations
+from uu.retrieval.interfaces import ISearchResult
+from uu.retrieval.collection.interfaces import IUIDItemCollection
+from uu.retrieval.collection.interfaces import IItemCollection
+from uu.retrieval.collection.interfaces import ICollectionSetOperations
 from uu.retrieval.result import DocumentIdMapper, SearchResult
 from uu.retrieval.utils import mergedict, normalize_uuid
 

@@ -2,8 +2,8 @@ import itertools
 
 from zope.interface import implements, implementsOnly
 
-from uu.retrieval.interfaces import IUIDItemCollection, INamedItemCollection
-from uu.retrieval.interfaces import ICollectionSetOperations
+from interfaces import IUIDItemCollection, INamedItemCollection
+from interfaces import ICollectionSetOperations
 
 
 class BaseCollection(object):
