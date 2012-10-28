@@ -153,13 +153,14 @@ class UUIDMapper(Persistent, IdGeneratorBase):
     
     def add(self, uid, docid=None):
         if not (isinstance(uid, str) or isinstance(uid, uuid.UUID)):
+            # maybe uid is object *with* a UUID, not a UUID itself
             try:
                 uid = IUUID(uid)
             except TypeError:
                 uid = None
             if uid is None:
                 raise ValueError('unable to obtain uuid for object')
-        uid = str(uid)
+        uid = normalize_uuid(uid)
         if docid is None:
             docid = self.new_docid()
         if uid in self.uuid_to_docid:
