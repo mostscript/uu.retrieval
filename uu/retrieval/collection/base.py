@@ -35,23 +35,22 @@ class BaseCollection(object):
         else:
             self._uids = list(zip(*items)[0])  # sequence of item tuples
         self._items = dict(items)
-        self.__class__._init_namemap(self, namemap)
+        self._init_namemap(namemap)
     
-    @classmethod
-    def _init_namemap(cls, inst, namemap):
+    def _init_namemap(self, namemap):
         """
         take a name->uid mapping, optionally supporting multiple names 
         per one UID.
         """
         if namemap is None:
-            inst._name_to_uid = inst._uid_to_names = None
+            self._name_to_uid = self._uid_to_names = None
         else:
-            inst._name_to_uid = dict(namemap)
-            inst._uid_to_names = {}
+            self._name_to_uid = dict(namemap)
+            self._uid_to_names = {}
             for name, uid in namemap.items():
-                if uid not in inst._uid_to_names:
-                    inst._uid_to_names[uid] = []
-                inst._uid_to_names[uid].append(name)
+                if uid not in self._uid_to_names:
+                    self._uid_to_names[uid] = []
+                self._uid_to_names[uid].append(name)
     
     def get(self, name, default=None):
         name = str(name)  # in case of uuid.UUID
@@ -131,7 +130,7 @@ class BaseCollection(object):
         # optional name mapping
         _mergednames = lambda a,b: dict(set(a.items()) & set(b.items()))
         namemap = self._new_namemap(other, _mergednames)
-        self.__class__._init_namemap(rv, namemap)
+        rv._init_namemap(namemap)
         return rv
    
     __and__ = intersection
@@ -152,7 +151,7 @@ class BaseCollection(object):
         # optional name mapping
         _mergednames = lambda a,b: dict(set(a.items()) | set(b.items()))
         namemap = self._new_namemap(other, _mergednames)
-        self.__class__._init_namemap(rv, namemap)
+        rv._init_namemap(namemap)
         return rv
     
     __or__ = union
@@ -167,7 +166,7 @@ class BaseCollection(object):
         # optional name mapping
         _mergednames = lambda a,b: dict(set(a.items()) - set(b.items()))
         namemap = self._new_namemap(other, _mergednames)
-        self.__class__._init_namemap(rv, namemap)
+        rv._init_namemap(namemap)
         return rv
     
     __sub__ = difference
