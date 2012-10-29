@@ -10,7 +10,7 @@ from zope.schema.interfaces import IField
 import zope.schema
 from zope.schema import getFieldsInOrder
 
-from uu.retrieval.interfaces import ISchemaManager, ISchemaIndexes
+from interfaces import ISchemaManager, ISchemaIndexes
 from uu.retrieval.utils import identify_interface
 
 
