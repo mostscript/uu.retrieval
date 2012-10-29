@@ -97,6 +97,9 @@ class SchemaManager(Persistent):
         if name not in self._names:
             return
         self._names.remove(name)
+    
+    def orphans(self):
+        return tuple(k for k,v in self.iteritems() if v is None)
 
 
 def schema_index_types(field):

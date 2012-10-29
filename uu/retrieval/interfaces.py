@@ -140,6 +140,12 @@ class ISchemaManager(IIterableMapping):
         Given schema or identifier thereof, remove it from mapping for
         this manager.
         """
+    
+    def orphans():
+        """
+        List any unimportable schema. May be slow/linear attempt
+        of imports of dotted names.  Returns tuple of dotted names.
+        """
 
 
 class ISchemaIndexes(IReadSequence):

@@ -84,6 +84,14 @@ class TestSchemaManager(unittest.TestCase):
         assert mgr.keys() == list(mgr.iterkeys()) == [name,]
         assert mgr.items() == list(mgr.iteritems()) == [item,]
         assert mgr.values() == list(mgr.itervalues()) == [ITestSchema,]
+    
+    def test_orphans(self):
+        mgr = SchemaManager()
+        mgr.bind(ITestSchema)
+        mgr._names.append('some.unimportable.name')
+        assert ITestSchema in mgr.values()
+        assert ITestSchema.__identifier__ not in mgr.orphans()
+        assert 'some.unimportable.name' in mgr.orphans()
 
 
 class TestSchemaIndexes(unittest.TestCase):
