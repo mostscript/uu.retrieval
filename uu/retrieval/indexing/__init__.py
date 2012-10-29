@@ -122,6 +122,8 @@ class UUIDMapper(Persistent, IdGeneratorBase):
     considered the forward index.
     """    
     
+    implements(IUUIDMapper)
+    
     family = BTrees.family64
     
     def __init__(self):
