@@ -52,6 +52,9 @@ class MockContainer(PortalContent):
     
     def contains(self):
         return self._items.keys()  # UUIDs of contained items
+    
+    def items(self):
+        return self._items.items()
 
 
 class ResolverTestBase(object):
