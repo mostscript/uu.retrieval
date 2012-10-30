@@ -207,6 +207,7 @@ class SimpleCatalog(Persistent):
         result = SearchResult.fromtuples(t, resolver=self.resolver)
         result.__parent__ = self
         result.__name__ = 'result'
+        return result
     
     def query(self, *args, **kwargs):
         qdict = None
