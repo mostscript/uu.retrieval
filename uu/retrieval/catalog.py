@@ -1,5 +1,6 @@
 from persistent import Persistent
 from plone.uuid.interfaces import IUUID
+from repoze.catalog import query
 from zope.dottedname.resolve import resolve
 from zope.interface import implements
 
