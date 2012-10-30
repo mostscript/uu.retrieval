@@ -7,6 +7,7 @@ from repoze.catalog.catalog import Catalog as BaseIndexer
 from repoze.catalog.indexes.field import CatalogFieldIndex
 from repoze.catalog.indexes.text import CatalogTextIndex
 from repoze.catalog.indexes.keyword import CatalogKeywordIndex
+import repoze.catalog.query
 from zope.interface import implements
 from zope.index.text.lexicon import CaseNormalizer
 from zope.index.text.lexicon import Lexicon
@@ -18,6 +19,11 @@ import BTrees
 from uu.retrieval.utils import is_multiple, normalize_uuid
 
 from interfaces import IIndexer, ICatalogIndex, IUUIDMapper
+
+## temporary monkey patch of repoze.catalog.query.BoolOp to 
+## globally force 64-bit long keys
+repoze.catalog.query.BoolOp.family = BTrees.family64
+
 
 ## 64-bit integer keys -- specific Indexer (Catalog) and Indexes
 
