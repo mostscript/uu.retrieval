@@ -19,4 +19,9 @@
     factory=".schema.schema_indexes"
     />
 
+  <adapter
+    factory=".resolver.ContentContainerUIDResolver"
+    name="container_resolution"
+    />
+
 </configure>

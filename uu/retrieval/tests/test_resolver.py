@@ -14,6 +14,7 @@ from plone.uuid.interfaces import IAttributeUUID, IUUID
 
 from uu.retrieval.interfaces import IItemResolver, IUIDKeyedContainer
 from uu.retrieval.resolver import CatalogContainerResolver
+from uu.retrieval.resolver import ContentContainerUIDResolver
 from uu.retrieval.tests.layers import RETRIEVAL_APP_TESTING
 from uu.retrieval.tests.test_result import ALL_ITEMS, MockItem
 
@@ -53,11 +54,7 @@ class MockContainer(PortalContent):
         return self._items.keys()  # UUIDs of contained items
 
 
-class TestResolver(unittest.TestCase):
-    """
-    Integration tests for CMF/catalog-based item resolver, where
-    the container containing the items is contentish.
-    """
+class ResolverTestBase(object):
     
     layer = RETRIEVAL_APP_TESTING
     
@@ -87,6 +84,32 @@ class TestResolver(unittest.TestCase):
         self._temporary_content_ids.add(id)
         return mock
     
+    def _content_equivalent(self, o1, o2):
+        _path = lambda o: o.getPhysicalPath()
+        return aq_base(o1) is aq_base(o2) and _path(o1) == _path(o2)
+    
+    def get_resolver(self, context=None):
+        raise NotImplementedError # abstract
+    
+    def test_resolve(self):
+        mock = self._content(id='mock_resolve', items=ALL_ITEMS)
+        container_uid = IUUID(mock)
+        item1_uid = ALL_ITEMS.keys()[0]
+        resolver = self.get_resolver(mock) 
+        o = resolver(item1_uid)
+        assert o is ALL_ITEMS[item1_uid]
+        ## equivalency for __parent__ pointer; resolver does not 
+        ## get the same acqusition wrapper, so we test identity
+        ## unwrapped, plus equivalent paths:
+        assert self._content_equivalent(o.__parent__, mock)
+
+
+class TestResolver(ResolverTestBase, unittest.TestCase):
+    """
+    Integration tests for CMF/catalog-based item resolver, where
+    the container containing the items is contentish.
+    """
+    
     def test_mock_content(self):
         mock = self._content(id='mock1', items=ALL_ITEMS)
         for k in ALL_ITEMS.keys():
@@ -107,19 +130,13 @@ class TestResolver(unittest.TestCase):
         o = r[0]._unrestrictedGetObject()
         assert aq_base(o) is aq_base(mock)
     
-    def _content_equivalent(self, o1, o2):
-        _path = lambda o: o.getPhysicalPath()
-        return aq_base(o1) is aq_base(o2) and _path(o1) == _path(o2)
+    def get_resolver(self, context=None):
+        return CatalogContainerResolver()
 
-    def test_resolve(self):
-        mock = self._content(id='mock_resolve', items=ALL_ITEMS)
-        container_uid = IUUID(mock)
-        item1_uid = ALL_ITEMS.keys()[0]
-        resolver = CatalogContainerResolver()
-        o = resolver(item1_uid)
-        assert o is ALL_ITEMS[item1_uid]
-        ## equivalency for __parent__ pointer; resolver does not 
-        ## get the same acqusition wrapper, so we test identity
-        ## unwrapped, plus equivalent paths:
-        assert self._content_equivalent(o.__parent__, mock)
+
+class TestSingleContainerResolution(ResolverTestBase, unittest.TestCase):
+    """Test ContentContainerUIDResolver"""
+    
+    def get_resolver(self, context=None):
+        return ContentContainerUIDResolver(context)
 
