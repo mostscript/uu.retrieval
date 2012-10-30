@@ -190,4 +190,25 @@ class TestCatalog(unittest.TestCase):
             assert uid in catalog.keys()
             assert record in catalog.values()
             assert (uid, record) in catalog.items()
-
+    
+    def test_catalog_query(self):
+        container = self.test_indexing()
+        catalog = container.catalog
+        from repoze.catalog import query
+        rec1, rec2, rec3, rec4 = RECORDS
+        query1 = query.Eq('field_name', 'Me')
+        query2 = query.Any('keyword_keywords', 'that')
+        r = catalog.query(query1)
+        assert len(r) == 1
+        assert r.values()[0] is rec1
+        assert r.keys()[0] is IUUID(rec1)
+        r = catalog.query(query2)
+        assert len(r) == 2
+        assert IUUID(rec1) in r
+        assert rec1 in r.values()
+        assert IUUID(rec2) in r
+        assert rec2 in r.values()
+        r = catalog.query(query1 & query1)
+        assert rec2 not in r.values()
+        assert rec1 in r.values()
+ 
