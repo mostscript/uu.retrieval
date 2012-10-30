@@ -10,6 +10,7 @@ from uu.retrieval.indexing import FieldIndex, KeywordIndex, TextIndex
 from uu.retrieval.resolver import ContentContainerUIDResolver
 from uu.retrieval.schema.interfaces import ISchemaIndexes
 from uu.retrieval.utils import identify_interface
+from uu.retrieval.result import SearchResult
 
 
 IDXCLS = {
