@@ -201,7 +201,7 @@ class SimpleCatalog(Persistent):
         """
         size, docids = result  # unpack, but we do not care about size
         t = tuple(
-            (docid, self.uidmap.uid_for(docid)) for docid in docids
+            (docid, self.uidmap.uuid_for(docid)) for docid in docids
             )  # iterate into pairs of docid, uid
         result = SearchResult.fromtuples(t, resolver=self.resolver)
         result.__parent__ = self
