@@ -25,7 +25,7 @@ IDXCLS = {
 
 ## various value normalization:
 
-def _indexer_value(v):
+def _indexer_value(v, index=None):
     """General value normalizer for indexed values"""
     # check datetime, then date, order matters:
     if isinstance(v, datetime.datetime):
@@ -127,7 +127,9 @@ class SimpleCatalog(Persistent):
             ## normalization, it is the only way to have a callable
             ## discriminator that is anonymous (not importable) that
             ## works around limitations in ZODB/pickle.
-            discriminator = ValueDiscriminator(fieldname)
+            discriminator = fieldname
+            if idx_type != 'text':
+                discriminator = ValueDiscriminator(fieldname)
             self.indexer[name] = IDXCLS.get(idx_type)(discriminator)
     
     def index(self, obj):
