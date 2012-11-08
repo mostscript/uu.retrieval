@@ -1,3 +1,6 @@
+import datetime
+import time
+
 from persistent import Persistent
 from plone.uuid.interfaces import IUUID
 from repoze.catalog import query
@@ -18,6 +21,45 @@ IDXCLS = {
     'text'      : TextIndex,
     'keyword'   : KeywordIndex,
 }
+
+
+## various value normalization:
+
+def _indexer_value(v):
+    """General value normalizer for indexed values"""
+    # check datetime, then date, order matters:
+    if isinstance(v, datetime.datetime):
+        return int(time.mktime(v.timetuple()))  # timetuple has 1s resolution
+    if isinstance(v, datetime.date):
+        return v.toordinal()
+    if v is None:
+        # avoid range query side effects of None key for index btrees
+        return float('inf')  # sentinel value
+    return v
+
+
+def query_value(v):
+    return _indexer_value(v)
+
+
+def normalize_query(q):
+    if isinstance(q, query.BoolOp):
+        for subq in q.queries:
+            normalize_query(subq)
+    else:
+        q._value = query_value(q._value)
+
+
+class ValueDiscriminator(Persistent):
+    
+    def __init__(self, fieldname):
+        self.fieldname = str(fieldname)
+    
+    def __call__(self, obj, default):
+        v = getattr(obj, self.fieldname, default)
+        if v is default:
+            return default
+        return _indexer_value(v)
 
 
 class SimpleCatalog(Persistent):
@@ -81,7 +123,12 @@ class SimpleCatalog(Persistent):
         for name in names:
             idx_type = name.split('_')[0]
             fieldname = name[len(idx_type)+1:]
-            self.indexer[name] = IDXCLS.get(idx_type)(fieldname)
+            ## need a persistent callable discriminator to support value
+            ## normalization, it is the only way to have a callable
+            ## discriminator that is anonymous (not importable) that
+            ## works around limitations in ZODB/pickle.
+            discriminator = ValueDiscriminator(fieldname)
+            self.indexer[name] = IDXCLS.get(idx_type)(discriminator)
     
     def index(self, obj):
         uid = IUUID(obj)
@@ -176,10 +223,12 @@ class SimpleCatalog(Persistent):
     
     def _query_from_mapping(self, qdict):
         """
-        return a query.Query object given mapping of keys/values
+        return a query.Query object given mapping of keys/values.
+        Value normalization is not in scope (should happen to
+        resulting query).
         """
         r = []
-        for idxname, value in qdict:
+        for idxname, value in qdict.items():
             if isinstance(value, tuple) and len(value) > 1:
                 if issubclass(value[0], query.Query):
                     comparator = value[0]
@@ -226,6 +275,7 @@ class SimpleCatalog(Persistent):
             _query = self._query_from_mapping(qdict)
         if kwargs.get('return_query_result_count', False):
             return self.indexer.query(_query)[0]
+        normalize_query(_query)  # normalize values recursively in-place
         return self._make_result(self.indexer.query(_query))
     
     def rcount(self, *args, **kwargs):

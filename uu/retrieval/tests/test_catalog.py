@@ -1,3 +1,4 @@
+import datetime
 import uuid
 import unittest2 as unittest
 
@@ -32,6 +33,7 @@ class IMockRecord(Interface):
     keywords = schema.List(
         value_type=schema.TextLine(),
         )
+    when = schema.Date(required=False)
 
 
 class MockRecord(object):
@@ -58,6 +60,7 @@ RECORDS = (
         favorite_color=u'red',
         bio=u'Hello, this is a\n test of something unique',
         keywords=[u'this', u'that', u'other'],
+        when=None,
         ),
     MockRecord(
         name=u'You',
@@ -65,6 +68,7 @@ RECORDS = (
         favorite_color=u'orange',
         bio=u'Hello, this is a\n test of something neither here nor there',
         keywords=[u'that',],
+        when=datetime.date(2012,1,2),
         ),
     MockRecord(
         name=u'Man in yellow hat',
@@ -72,6 +76,7 @@ RECORDS = (
         favorite_color=u'yellow',
         bio=u'This guy likes to hang around with monkeys.',
         keywords=[u'this', u'other', u'monkey'],
+        when=None,
         ),
     MockRecord(
         name=u'Curious george',
@@ -79,6 +84,7 @@ RECORDS = (
         favorite_color=u'green',
         bio=u'He is a monkey, of course.',
         keywords=[u'this', u'monkey'],
+        when=datetime.date(2012,1,3),
         ),
 )
 
@@ -198,6 +204,8 @@ class TestCatalog(unittest.TestCase):
         rec1, rec2, rec3, rec4 = RECORDS
         query1 = query.Eq('field_name', 'Me')
         query2 = query.Any('keyword_keywords', 'that')
+        query3 = query.Eq('field_when', datetime.date(2012,1,2))
+        query_empty_date = query.Eq('field_when', None)
         r = catalog.query(query1)
         assert len(r) == 1
         assert r.values()[0] is rec1
@@ -211,4 +219,12 @@ class TestCatalog(unittest.TestCase):
         r = catalog.query(query1 & query1)
         assert rec2 not in r.values()
         assert rec1 in r.values()
- 
+        r = catalog.query(query3)
+        assert len(r) == 1
+        assert IUUID(rec2) in r
+        r = catalog.query(query_empty_date)
+        assert len(r) == 2
+        assert IUUID(rec1) in r and IUUID(rec3) in r
+        r = catalog.query(query3 & query2)
+        assert len(r) == 1
+        assert IUUID(rec2) in r
