@@ -33,7 +33,7 @@ def _indexer_value(v, fieldtype=None):
         return int(time.mktime(v.timetuple()))  # timetuple has 1s resolution
     if isinstance(v, datetime.date):
         return v.toordinal()
-    if v is None and ICollection.providedBy(fieldtype):
+    if v is None and ICollection.implementedBy(fieldtype):
         # default value is empty list/set/tuple/dict respective to fieldtype
         return fieldtype._type()  # _type is non-tuple type for collections
     elif v is None:
