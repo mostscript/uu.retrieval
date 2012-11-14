@@ -6,6 +6,7 @@ from plone.uuid.interfaces import IUUID
 from repoze.catalog import query
 from zope.dottedname.resolve import resolve
 from zope.interface import implements
+from zope.schema.interfaces import ICollection
 
 from uu.retrieval.interfaces import ISimpleCatalog
 from uu.retrieval.indexing import Indexer, UUIDMapper
@@ -25,14 +26,17 @@ IDXCLS = {
 
 ## various value normalization:
 
-def _indexer_value(v, index=None):
+def _indexer_value(v, fieldtype=None):
     """General value normalizer for indexed values"""
     # check datetime, then date, order matters:
     if isinstance(v, datetime.datetime):
         return int(time.mktime(v.timetuple()))  # timetuple has 1s resolution
     if isinstance(v, datetime.date):
         return v.toordinal()
-    if v is None:
+    if v is None and ICollection.providedBy(fieldtype):
+        # default value is empty list/set/tuple/dict respective to fieldtype
+        return fieldtype._type()  # _type is non-tuple type for collections
+    elif v is None:
         # avoid range query side effects of None key for index btrees
         return float('inf')  # sentinel value
     return v
@@ -52,14 +56,15 @@ def normalize_query(q):
 
 class ValueDiscriminator(Persistent):
     
-    def __init__(self, fieldname):
-        self.fieldname = str(fieldname)
+    def __init__(self, field):
+        self.fieldname = str(field.__name__)
+        self.fieldtype = field.__class__
     
     def __call__(self, obj, default):
         v = getattr(obj, self.fieldname, default)
         if v is default:
             return default
-        return _indexer_value(v)
+        return _indexer_value(v, self.fieldtype)
 
 
 class SimpleCatalog(Persistent):
@@ -123,13 +128,14 @@ class SimpleCatalog(Persistent):
         for name in names:
             idx_type = name.split('_')[0]
             fieldname = name[len(idx_type)+1:]
+            field = self.search_schema[fieldname]
             ## need a persistent callable discriminator to support value
             ## normalization, it is the only way to have a callable
             ## discriminator that is anonymous (not importable) that
             ## works around limitations in ZODB/pickle.
             discriminator = fieldname
             if idx_type != 'text':
-                discriminator = ValueDiscriminator(fieldname)
+                discriminator = ValueDiscriminator(field)
             self.indexer[name] = IDXCLS.get(idx_type)(discriminator)
     
     def index(self, obj):
