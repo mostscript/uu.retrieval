@@ -3,9 +3,6 @@ import unittest2 as unittest
 
 from plone.uuid.interfaces import IUUID
 
-from uu.retrieval.indexing.interfaces import IIndexer
-from uu.retrieval.indexing.interfaces import ICatalogIndex
-from uu.retrieval.indexing.interfaces import IUUIDMapper
 from uu.retrieval.indexing import Indexer
 from uu.retrieval.indexing import FieldIndex, TextIndex, KeywordIndex
 from uu.retrieval.indexing import UUIDMapper
@@ -14,22 +11,23 @@ from uu.retrieval.utils import normalize_uuid
 
 
 class IdGeneratorTests(unittest.TestCase):
-    
+
     def setUp(self):
         self.generator = IdGeneratorBase()
         self.generator.docid_to_uuid = self.generator.family.IO.BTree()
         self.family = self.generator.family
         from zope.configuration import xmlconfig
         import plone.uuid
-        c = xmlconfig.file('configure.zcml', plone.uuid)  # reg adapter
-    
+        # register adapter:
+        c = xmlconfig.file('configure.zcml', plone.uuid)  # noqa
+
     def test_idgen_range(self):
         toobig = self.family.maxint + 1
         self._v_nextid = toobig
         v = self.generator.new_docid()
         assert v <= self.family.maxint
         assert v >= self.family.minint
-    
+
     def _mock_item(self):
         # need mock object that provides IAttributeUUID
         from uu.retrieval.tests.test_result import MockItem
@@ -38,7 +36,7 @@ class IdGeneratorTests(unittest.TestCase):
         item = MockItem()
         notify(ObjectCreatedEvent(item))
         return item
-    
+
     def test_uuid_creation(self):
         uid = self.generator.new_uuid()
         assert len(uid) == 36
@@ -46,7 +44,7 @@ class IdGeneratorTests(unittest.TestCase):
         assert IUUID(item, None) is not None  # has a UUID
         normalized = normalize_uuid(IUUID(item, None))
         assert self.generator.new_uuid(item) == normalized
-    
+
     def test_uuid_creation_with_createfn(self):
         createfn1 = lambda: uuid.uuid4()
         createfn2 = lambda o: uuid.uuid3(uuid.NAMESPACE_DNS, repr(o))
@@ -56,14 +54,14 @@ class IdGeneratorTests(unittest.TestCase):
 
 
 class UUIDMapperTests(unittest.TestCase):
-    
+
     def test_btrees(self):
         mapper = UUIDMapper()
         from BTrees.LOBTree import LOBTree
         from BTrees.OLBTree import OLBTree
         self.assertIsInstance(mapper.uuid_to_docid, OLBTree)
         self.assertIsInstance(mapper.docid_to_uuid, LOBTree)
-    
+
     def test_contains(self):
         mapper = UUIDMapper()
         uid, docid = uuid.uuid4(), 12345
@@ -71,7 +69,7 @@ class UUIDMapperTests(unittest.TestCase):
         assert uid in mapper        # normalized UUID->str
         assert str(uid) in mapper
         assert docid in mapper
-    
+
     def test_add_remove(self):
         """Test add/remove and containment/get/length"""
         mapper = UUIDMapper()
@@ -110,7 +108,7 @@ class UUIDMapperTests(unittest.TestCase):
         mapper.add(uid, docid)
         assert uid in mapper and docid in mapper
         assert len(mapper) == 1
-        
+
     def test_enumeration(self):
         """test enumeration and iteration"""
         _uids = []
@@ -133,32 +131,34 @@ class UUIDMapperTests(unittest.TestCase):
             assert (uid, mapper.get(uid)) in mapper.iteritems()
 
 
+class MockItem(object):
+    pass
+
+
 class TestIndexBoundaries(unittest.TestCase):
     """Verify that 64-bit long integers can be stored as keys in index"""
-    
+
     def _test_index(self, cls, getter):
         indexer = Indexer()
-        class MyItem(object):
-            pass
         idx = cls(getter)
-        idx.index_doc(1, MyItem())
-        idx.index_doc(indexer.family.maxint, MyItem())
+        idx.index_doc(1, MockItem())
+        idx.index_doc(indexer.family.maxint, MockItem())
         self.assertRaises(
             ValueError,
             idx.index_doc,
-            indexer.family.maxint+1,  # too big
-            MyItem(),
+            indexer.family.maxint + 1,  # too big
+            MockItem(),
             )
-    
+
     def test_field_index(self):
         import random
-        _random = lambda o, default: random.randint(0,1111)
+        _random = lambda o, default: random.randint(0, 1111)
         self._test_index(FieldIndex, getter=_random)
 
     def test_textindex(self):
         _text = lambda o, default: 'Lorem ipsum'
         self._test_index(TextIndex, getter=_text)
-    
+
     def test_keywordindex(self):
         _keywords = lambda o, default: ['blue', 'orange', 'white']
         self._test_index(KeywordIndex, getter=_keywords)
@@ -166,21 +166,19 @@ class TestIndexBoundaries(unittest.TestCase):
 
 class TestIndexer(unittest.TestCase):
     """Test catalog/indexer 64-bit support"""
-    
+
     def test_docid(self):
         import random
         indexer = Indexer()
-        class MyItem(object):
-            pass
-        _random = lambda o, default: random.randint(0,1111)
+        _random = lambda o, default: random.randint(0, 1111)
         idx1 = FieldIndex(_random)
         indexer['idx1'] = idx1
-        indexer.index_doc(1, MyItem())
-        indexer.index_doc(indexer.family.maxint, MyItem())
+        indexer.index_doc(1, MockItem())
+        indexer.index_doc(indexer.family.maxint, MockItem())
         self.assertRaises(
             ValueError,
             indexer.index_doc,
-            indexer.family.maxint+1,  # too big
-            MyItem(),
+            indexer.family.maxint + 1,
+            MockItem(),
             )
 

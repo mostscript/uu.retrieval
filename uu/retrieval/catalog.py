@@ -13,14 +13,14 @@ from uu.retrieval.indexing import Indexer, UUIDMapper
 from uu.retrieval.indexing import FieldIndex, KeywordIndex, TextIndex
 from uu.retrieval.resolver import ContentContainerUIDResolver
 from uu.retrieval.schema.interfaces import ISchemaIndexes
-from uu.retrieval.utils import identify_interface
+from uu.retrieval.utils import identify_interface, normalize_uuid
 from uu.retrieval.result import SearchResult
 
 
 IDXCLS = {
-    'field'     : FieldIndex,
-    'text'      : TextIndex,
-    'keyword'   : KeywordIndex,
+    'field': FieldIndex,
+    'text': TextIndex,
+    'keyword': KeywordIndex,
 }
 
 
@@ -127,7 +127,7 @@ class SimpleCatalog(Persistent):
         names = self.indexes()
         for name in names:
             idx_type = name.split('_')[0]
-            fieldname = name[len(idx_type)+1:]
+            fieldname = name[(len(idx_type) + 1):]
             field = self.search_schema[fieldname]
             ## need a persistent callable discriminator to support value
             ## normalization, it is the only way to have a callable
@@ -220,7 +220,7 @@ class SimpleCatalog(Persistent):
     def items(self):
         return list(self.iteritems())
     
-    ## IItemCollection 
+    ## IItemCollection
     def byuid(self):
         return self
     
@@ -254,7 +254,7 @@ class SimpleCatalog(Persistent):
     
     def _make_result(self, result):
         """
-        Given a result as tuple of length, integer docids, 
+        Given a result as tuple of length, integer docids,
         construct a search result keyed by UUID.
         """
         size, docids = result  # unpack, but we do not care about size

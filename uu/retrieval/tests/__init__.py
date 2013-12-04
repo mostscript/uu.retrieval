@@ -6,9 +6,9 @@ class PkgTest(unittest.TestCase):
     
     def test_pkg_import(self):
         """test basic package imports"""
-        import uu.retrieval
+        import uu.retrieval  # noqa
         from uu.retrieval import interfaces
-        from uu.retrieval.indexing import interfaces
-        from uu.retrieval import indexing
-        from uu.retrieval import utils
+        from uu.retrieval.indexing import interfaces  # noqa
+        from uu.retrieval import indexing  # noqa
+        from uu.retrieval import utils  # noqa
 

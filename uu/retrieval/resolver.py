@@ -14,7 +14,7 @@ from uu.retrieval.interfaces import IItemResolver, CONTAINMENT_INDEX
 class ContentContainmentResolverBase(object):
 
     loaded = False
-    
+
     def _load_globals(self):
         self.portal = getSite()
         self.catalog = getToolByName(self.portal, 'portal_catalog')
@@ -31,9 +31,9 @@ class CatalogContainerResolver(ContentContainmentResolverBase):
     catalog to resolve the container (content, usually), and then use
     container interface to get the item/record/object by UUID key.
     """
-     
+
     implements(IItemResolver)
-     
+
     INDEX_NAME = CONTAINMENT_INDEX
 
     def __call__(self, uid, _context=None):
@@ -51,7 +51,7 @@ class CatalogContainerResolver(ContentContainmentResolverBase):
         brains = self.catalog.search({self.INDEX_NAME: str(uid)})
         if brains:
             #first location/brain should be only item containing UID
-            return brains[0]._unrestrictedGetObject() 
+            return brains[0]._unrestrictedGetObject()
         return None
 
 
@@ -60,19 +60,19 @@ class ContentContainerUIDResolver(ContentContainmentResolverBase):
 
     implements(IItemResolver)
     adapts(IContentish)
-   
+
     def __init__(self, context):
         self._load_globals()
         self.context = context
         if isinstance(context, str):
             self.context = self._context_by_uid(context)
-     
+
     def _context_by_uid(self, uid):
-        r = self.catalog.search({'UID':str(uid)})
+        r = self.catalog.search({'UID': str(uid)})
         if not r:
             raise KeyError('Unknown UID: %s' % uid)
         return r[0]._unrestrictedGetObject()
-        
+
     def __call__(self, uid, _context=None):
         return self.context.get(uid, None)
- 
+

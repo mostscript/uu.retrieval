@@ -4,7 +4,7 @@ import unittest2 as unittest
 
 from Acquisition import aq_base
 import plone.uuid
-from plone.uuid.interfaces import IUUID, IAttributeUUID
+from plone.uuid.interfaces import IUUID
 from zope.configuration import xmlconfig
 from zope.component import adapter, getGlobalSiteManager
 from zope.component.hooks import setSite
@@ -42,7 +42,7 @@ class MockRecord(object):
     def __init__(self, **kwargs):
         self.record_uid = str(uuid.uuid4())  # random
         self.schema = IMockRecord
-        for k,v in kwargs.items():
+        for k, v in kwargs.items():
             if k in IMockRecord:
                 setattr(self, k, v)
 
@@ -67,8 +67,8 @@ RECORDS = (
         age=90,
         favorite_color=u'orange',
         bio=u'Hello, this is a\n test of something neither here nor there',
-        keywords=[u'that',],
-        when=datetime.date(2012,1,2),
+        keywords=[u'that'],
+        when=datetime.date(2012, 1, 2),
         ),
     MockRecord(
         name=u'Man in yellow hat',
@@ -84,9 +84,10 @@ RECORDS = (
         favorite_color=u'green',
         bio=u'He is a monkey, of course.',
         keywords=[u'this', u'monkey'],
-        when=datetime.date(2012,1,3),
+        when=datetime.date(2012, 1, 3),
         ),
 )
+
 
 class MockContainer(BaseMockContainer):
     """
@@ -99,7 +100,6 @@ class MockContainer(BaseMockContainer):
         super(MockContainer, self).__init__(id, items)
         self.catalog = None
         self.schema = IMockRecord
-
 
 
 class TestCatalog(unittest.TestCase):
@@ -125,7 +125,7 @@ class TestCatalog(unittest.TestCase):
             name = self._temporary_content_ids.pop()
             mock = site.get(name)
             mock.unindexObject()
-            site.manage_delObjects([name,])
+            site.manage_delObjects([name])
         for record in RECORDS:
             if hasattr(record, '_v_parent'):
                 record._v_parent = None
@@ -170,7 +170,7 @@ class TestCatalog(unittest.TestCase):
         catalog = container.catalog
         record_count = 0
         assert len(catalog) == record_count
-        for uid,record in container.items():
+        for uid, record in container.items():
             catalog.index(record)
             record_count += 1
             assert len(catalog) == record_count
@@ -188,7 +188,7 @@ class TestCatalog(unittest.TestCase):
         """Test catalog enumeration, containment, iteration"""
         container = self.test_indexing()
         catalog = container.catalog
-        for uid,record in container.items():
+        for uid, record in container.items():
             # containment, check by key or value
             assert uid in catalog
             assert record in catalog
@@ -204,7 +204,7 @@ class TestCatalog(unittest.TestCase):
         rec1, rec2, rec3, rec4 = RECORDS
         query1 = query.Eq('field_name', 'Me')
         query2 = query.Any('keyword_keywords', 'that')
-        query3 = query.Eq('field_when', datetime.date(2012,1,2))
+        query3 = query.Eq('field_when', datetime.date(2012, 1, 2))
         query_empty_date = query.Eq('field_when', None)
         r = catalog.query(query1)
         assert len(r) == 1

@@ -9,7 +9,7 @@ not_string = lambda v: not isinstance(v, basestring)
 iterable = lambda v: hasattr(v, '__iter__')
 is_multiple = lambda v: not_string(v) and iterable(v)
 
-_itemmerge = lambda a,b: dict(a.items() + b.items())
+_itemmerge = lambda a, b: dict(a.items() + b.items())
 mergedict = lambda s: reduce(_itemmerge, s)
 
 

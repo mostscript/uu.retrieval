@@ -1,2 +1,2 @@
-from base import BaseCollection
-from base import BaseNamedCollection
+from base import BaseCollection  # noqa
+from base import BaseNamedCollection  # noqa

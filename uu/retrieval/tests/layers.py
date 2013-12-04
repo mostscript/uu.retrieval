@@ -5,7 +5,7 @@ from plone.testing import zodb, zca
 from plone.testing import Layer, z2
 import plone.uuid
 from zope.configuration import xmlconfig
-from zope.component.hooks import setSite, setHooks
+#from zope.component.hooks import setSite, setHooks
 #from zope.configuration import xmlconfig
 from Products.CMFCore.utils import getToolByName
 
@@ -16,29 +16,29 @@ from uu.retrieval.tests.fixtures import CMFSite
 class CMFSiteLayer(Layer):
     """
     Minimal layer for testing integration with a CMF Site fixture.
-    
+
     Makes available a resource called 'site' which is the site
-    root, and uses zope.component.hooks.setSite() to set this 
+    root, and uses zope.component.hooks.setSite() to set this
     fixture/resource as the local site.
     """
-    
+
     defaultBases = (z2.STARTUP,)
-    
+
     SITEINFO = ('site', 'Test application site')    # id, title
-    USER = ('testuser', 'test')                     # user, passwd 
-    
+    USER = ('testuser', 'test')                     # user, passwd
+
     PRODUCTS = (
         'Products.ZCatalog',
         'Products.PluginIndexes',
         'Products.CMFCore',
         )
-    
+
     def setUpTestUserContext(self, app, user=None):
         user, passwd = self.USER if user is None else user
         uf = app['acl_users']
         uf.userFolderAddUser(user, passwd, ['Manager'], [])
         z2.login(uf, user)
-    
+
     def setUpSite(self, app):
         """given app, set up site fixture"""
         id, title = self.SITEINFO
@@ -48,7 +48,7 @@ class CMFSiteLayer(Layer):
         self['site'] = site
 
     def setUp(self):
-        self['zodbDB'] = db = zodb.stackDemoStorage(
+        self['zodbDB'] = zodb.stackDemoStorage(
             self.get('zodbDB'),
             name='CMFAppLayer',
             )
@@ -71,7 +71,6 @@ class CMFSiteLayer(Layer):
         zca.popGlobalRegistry()
 
 
-
 CMF_SITE_LAYER = CMFSiteLayer()
 
 CMF_SITE_TESTING = z2.IntegrationTesting(
@@ -82,31 +81,31 @@ CMF_SITE_TESTING = z2.IntegrationTesting(
 
 class RetrievalCMFAppLayer(Layer):
     """
-    Layer for testing integration of persistent components in 
+    Layer for testing integration of persistent components in
     a minimal CMF/Zope2 environment.  Many of the tests using this
-    fixture layer only need ZODB, ZCA, so this is just a 
+    fixture layer only need ZODB, ZCA, so this is just a
     host of most convenience to cover the handful/minority of
-    Zope2 or CMF-specific needs (like an object resolver component 
+    Zope2 or CMF-specific needs (like an object resolver component
     using a Catalog and OFS interfaces).  But this Zope2 usage
     is all loosely-coupled, so this Layer is not a normative
     suggestion of the only uses for these components.
     """
-    
+
     defaultBases = (CMF_SITE_TESTING,)
-    
+
     def _load_layer_zcml(self):
         xmlconfig.file('configure.zcml', uu.retrieval)
         xmlconfig.file('configure.zcml', plone.uuid)
-    
+
     def setUp(self):
         # Add indexes necessary to Catalog: UID
         site = self.get('site')
         catalog = getToolByName(site, 'portal_catalog')
-        catalog.addIndex('UID', type='UUIDIndex')         # singular item UID
-        catalog.addIndex('contains', type='KeywordIndex') # contained UIDs
+        catalog.addIndex('UID', type='UUIDIndex')          # singular item UID
+        catalog.addIndex('contains', type='KeywordIndex')  # contained UIDs
         transaction.commit()
         self._load_layer_zcml()
-        
+
 
 RETRIEVAL_APP_LAYER = RetrievalCMFAppLayer()
 

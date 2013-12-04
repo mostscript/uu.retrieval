@@ -4,7 +4,6 @@ from zope.interface import Interface
 from zope.interface.interfaces import IInterface
 from zope import schema
 
-from uu.retrieval.interfaces import ISchemaManager, ISchemaIndexes
 from uu.retrieval.schema import SchemaManager, schema_indexes, _resolve
 from uu.retrieval.utils import identify_interface
 
@@ -29,17 +28,17 @@ class ITestSchemaIndexes(Interface):
 
 
 class TestSchemaManager(unittest.TestCase):
-    
+
     def test_resolution(self):
         r = _resolve(ITestSchema.__identifier__)
         assert r is not None
         assert IInterface.providedBy(r)
         assert r is ITestSchema
-    
+
     def test_schema_identification(self):
         name = identify_interface(ITestSchema)
         assert name == ITestSchema.__identifier__
-    
+
     def test_dynamic_schema_identification(self):
         from hashlib import md5
         from plone.supermodel import serializeSchema
@@ -52,7 +51,7 @@ class TestSchemaManager(unittest.TestCase):
         expected_identifier = '.'.join((iface.__module__, expected_name))
         assert identify_interface(ITestSchema2) == expected_identifier
         iface.__name__ = oldname  # clean up
-    
+
     def test_bind_containment_and_forget(self):
         mgr = SchemaManager()
         assert len(mgr) == 0
@@ -75,16 +74,16 @@ class TestSchemaManager(unittest.TestCase):
         mgr.forget(name)
         assert name not in mgr
         assert len(mgr) == 0
-    
+
     def test_enumeration(self):
         mgr = SchemaManager()
         mgr.bind(ITestSchema)
         name = ITestSchema.__identifier__
         item = (name, ITestSchema)
-        assert mgr.keys() == list(mgr.iterkeys()) == [name,]
-        assert mgr.items() == list(mgr.iteritems()) == [item,]
-        assert mgr.values() == list(mgr.itervalues()) == [ITestSchema,]
-    
+        assert mgr.keys() == list(mgr.iterkeys()) == [name]
+        assert mgr.items() == list(mgr.iteritems()) == [item]
+        assert mgr.values() == list(mgr.itervalues()) == [ITestSchema]
+
     def test_orphans(self):
         mgr = SchemaManager()
         mgr.bind(ITestSchema)
@@ -95,10 +94,10 @@ class TestSchemaManager(unittest.TestCase):
 
 
 class TestSchemaIndexes(unittest.TestCase):
-    
+
     def _prefixed_index_name(self, n):
         prefixes = ('field_', 'keyword_', 'text_')
-        return any([n.startswith(p) for p in prefixes]) 
+        return any([n.startswith(p) for p in prefixes])
 
     def test_field(self):
         for name, field in schema.getFieldsInOrder(ITestSchemaIndexes):
@@ -106,7 +105,7 @@ class TestSchemaIndexes(unittest.TestCase):
                 indexes = schema_indexes(field)
                 assert len(indexes) > 0
                 assert isinstance(indexes, tuple)
-                
+
                 # TextLine versus Text
                 if schema.interfaces.ITextLine.providedBy(field):
                     assert len(indexes) == 2
@@ -119,7 +118,7 @@ class TestSchemaIndexes(unittest.TestCase):
                     assert len(indexes) == 2
                 elif schema.interfaces.IBytes.providedBy(field):
                     assert len(indexes) == 0
-                
+
                 # other field types
                 if schema.interfaces.ISequence.providedBy(field):
                     assert len(indexes) == 1
@@ -137,7 +136,7 @@ class TestSchemaIndexes(unittest.TestCase):
                     assert len(indexes) == 0
                 for idx in indexes:
                     assert self._prefixed_index_name(idx)
-    
+
     def test_interface(self):
         indexes = schema_indexes(ITestSchemaIndexes)
         assert len(indexes) > 0
