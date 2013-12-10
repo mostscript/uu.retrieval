@@ -48,7 +48,9 @@ class CatalogContainerResolver(ContentContainmentResolverBase):
     def context(self, uid):
         if not self.loaded:
             self._load_globals()
-        brains = self.catalog.search({self.INDEX_NAME: str(uid)})
+        brains = self.catalog.unrestrictedSearchResults(
+            {self.INDEX_NAME: str(uid)}
+            )
         if brains:
             #first location/brain should be only item containing UID
             return brains[0]._unrestrictedGetObject()
@@ -68,7 +70,7 @@ class ContentContainerUIDResolver(ContentContainmentResolverBase):
             self.context = self._context_by_uid(context)
 
     def _context_by_uid(self, uid):
-        r = self.catalog.search({'UID': str(uid)})
+        r = self.catalog.unrestrictedSearchResults({'UID': str(uid)})
         if not r:
             raise KeyError('Unknown UID: %s' % uid)
         return r[0]._unrestrictedGetObject()

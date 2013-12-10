@@ -126,7 +126,7 @@ class TestResolver(ResolverTestBase, unittest.TestCase):
     def test_mock_UID_index(self):
         mock = self._content(id='mock3', items=ALL_ITEMS)
         uid = IUUID(mock)
-        r = self.catalog.search({'UID': uid})
+        r = self.catalog.unrestrictedSearchResults({'UID': uid})
         assert len(r) > 0
         o = r[0]._unrestrictedGetObject()
         assert aq_base(o) is aq_base(mock)
