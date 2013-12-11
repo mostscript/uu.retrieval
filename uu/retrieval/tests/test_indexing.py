@@ -9,8 +9,12 @@ from uu.retrieval.indexing import UUIDMapper
 from uu.retrieval.indexing import IdGeneratorBase
 from uu.retrieval.utils import normalize_uuid
 
+from layers import RETRIEVAL_APP_TESTING
+
 
 class IdGeneratorTests(unittest.TestCase):
+
+    layer = RETRIEVAL_APP_TESTING
 
     def setUp(self):
         self.generator = IdGeneratorBase()
@@ -19,7 +23,11 @@ class IdGeneratorTests(unittest.TestCase):
         from zope.configuration import xmlconfig
         import plone.uuid
         # register adapter:
-        c = xmlconfig.file('configure.zcml', plone.uuid)  # noqa
+        c = xmlconfig.file(  # noqa
+            'configure.zcml',
+            plone.uuid,
+            context=self.layer['configurationContext'],
+            )
 
     def test_idgen_range(self):
         toobig = self.family.maxint + 1

@@ -112,7 +112,11 @@ class TestCatalog(unittest.TestCase):
     def setUp(self):
         # global component registrations
         getGlobalSiteManager().registerAdapter(dummy_uuid_adapter)
-        xmlconfig.file('configure.zcml', plone.uuid)
+        xmlconfig.file(
+            'configure.zcml',
+            plone.uuid,
+            context=self.layer['configurationContext'],
+            )
         # site integration fixture/layer stuff:
         self.site = self.layer['site']
         setSite(self.site)

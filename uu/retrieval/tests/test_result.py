@@ -13,6 +13,9 @@ from uu.retrieval.collection.interfaces import ICollectionSetOperations
 from uu.retrieval.result import DocumentIdMapper, SearchResult
 from uu.retrieval.utils import mergedict
 
+from layers import RETRIEVAL_APP_TESTING
+
+
 NS_UPIQ = uuid.uuid3(uuid.NAMESPACE_DNS, 'upiq.org')
 NS_PKG = uuid.uuid3(NS_UPIQ, 'uu.retrieval.tests.test_result')
 
@@ -110,10 +113,16 @@ class TestSearchResult(unittest.TestCase):
     Tests for BaseItemCollection (uid-keyed).
     """
 
+    layer = RETRIEVAL_APP_TESTING
+
     def setUp(self):
         from zope.configuration import xmlconfig
         import plone.uuid
-        c = xmlconfig.file('configure.zcml', plone.uuid)  # noqa
+        c = xmlconfig.file(  # noqa
+            'configure.zcml',
+            plone.uuid,
+            context=self.layer['configurationContext'],
+            )
 
     def test_interfaces(self):
         result = SearchResult(

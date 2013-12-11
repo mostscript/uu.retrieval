@@ -94,8 +94,9 @@ class RetrievalCMFAppLayer(Layer):
     defaultBases = (CMF_SITE_TESTING,)
 
     def _load_layer_zcml(self):
-        xmlconfig.file('configure.zcml', uu.retrieval)
-        xmlconfig.file('configure.zcml', plone.uuid)
+        context = self['configurationContext']
+        xmlconfig.file('configure.zcml', uu.retrieval, context=context)
+        xmlconfig.file('configure.zcml', plone.uuid, context=context)
 
     def setUp(self):
         # Add indexes necessary to Catalog: UID
