@@ -120,7 +120,7 @@ class TestSchemaIndexes(unittest.TestCase):
                     assert len(indexes) == 0
 
                 # other field types
-                if schema.interfaces.ISequence.providedBy(field):
+                if schema.interfaces.ICollection.providedBy(field):
                     assert len(indexes) == 1
                     assert indexes[0].startswith('keyword_')
                 if schema.interfaces.IInt.providedBy(field):

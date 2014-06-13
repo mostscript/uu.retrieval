@@ -107,7 +107,7 @@ def schema_index_types(field):
         zope.schema.interfaces.ITextLine: ('field', 'text'),
         zope.schema.interfaces.IBytesLine: ('field', 'text'),
         zope.schema.interfaces.IText: ('text',),
-        zope.schema.interfaces.ISequence: ('keyword',),
+        zope.schema.interfaces.ICollection: ('keyword',),
         zope.schema.interfaces.IChoice: ('field',),
         zope.schema.interfaces.IBytes: (),  # omit bytes fields!
         zope.schema.interfaces.IObject: (),  # omit
